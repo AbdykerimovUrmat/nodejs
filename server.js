@@ -5,6 +5,7 @@ let express = require('express'),
     store = new Datastore({ filename: 'store', autoload: true }),
     bodyParser = require('body-parser'),
     storeKeys = [];
+    
 store.loadDatabase();
 
 store.find({}, (err, docs) => {
@@ -31,11 +32,18 @@ app.route('/new')
     })
     .post((req, res) => {
         let data = req.body;
+        let size = storeKeys.length;
+        console.log(size);
+        if(size >= 10) {
+            res.redirect('/');
+            return;
+        }
         if (data.pageurl && data.pagename && data.pagecontent) {
             store.insert({
                 page: data.pagename,
                 content: data.pagecontent,
-                key: data.pageurl                
+                key: data.pageurl,
+                custom: true               
             });
             storeKeys.push(data.pageurl);
         }
@@ -46,6 +54,10 @@ app.get('/about', (req, res) => {
     res.render('about', { links: storeKeys });
 });
 
+app.route('/delete')
+    .post((req, res) => {
+        //to do
+    });
 app.get('/:page?', (req, res) => {
     let page = req.params.page, data;
     if (!page) page = 'home';
